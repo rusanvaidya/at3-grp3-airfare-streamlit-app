@@ -2,14 +2,15 @@
 name = "at3-streamlit-app"
 version = "0.0.1"
 description = ""
-authors = ["Group 3"]
+authors = ["at3-amlaa-group3"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "3.11"
-pandas = "^2.2.3"
-streamlit = "^1.39.0"
 
+[tool.poetry.group.dev.dependencies]
+streamlit = "^1.39.0"
+pandas = ">=1.4.0"
 
 [build-system]
 requires = ["poetry-core"]
