@@ -19,41 +19,46 @@ airport_codes = {
     "Denver International Airport (Denver, CO)": "DEN",
     "O'Hare International Airport (Chicago, IL)": "ORD",
     "Logan International Airport (Boston, MA)": "BOS",
-    "Washington Dulles International Airport (Washington, D.C.)": "IAD"
+    "Washington Dulles International Airport (Washington, D.C.)": "IAD",
+    "Detroit Metropolitan Wayne County Airport (Detroit, MI)": "DTW"
 }
 
 # Function to load model based on origin airport
 def load_model_based_on_origin(origin_code):
     if origin_code in ["JFK", "EWR", "LGA", "PHL"]:
         # Load models handled by Dezhou
-        model_path = "models/model_student1.pkl"
+        model_path = "models/model_student1.joblib"
     elif origin_code in ["ATL", "MIA", "CLT", "DFW"]:
         # Load models handled by Zeyuan
-        model_path = "models/model_student2.pkl"
+        model_path = "models/model_student2.joblib"
     elif origin_code in ["LAX", "SFO", "OAK", "DEN"]:
         # Load models handled by Hao
-        model_path = "models/model_hoadeng.pkl"
-    elif origin_code in ["ORD", "BOS", "IAD", "DFW"]:
+        model_path = "models/model_hoadeng.joblib"
+    elif origin_code in ["ORD", "BOS", "IAD", "DTW"]:
         # Load models handled by Rusan
-        model_path = "models/model_rusanvaidya_24886400.pkl"
+        model_path = "models/model_rusanvaidya_24886400.joblib"
     model = joblib.load(model_path)
     return model, model_path
 
 # Function to convert inputs into model-friendly format
 def preprocess_input(origin, destination, departure_date, departure_time, cabin_type):
     departure_datetime = datetime.combine(departure_date, departure_time)
-    cabin_map = {
-        "Coach": 0,
-        "Premium": 1,
-        "Business": 2,
-        "First Class": 3
-    }
+    date_time = pd.to_datetime(departure_datetime)
+    year = date_time.year
+    month = date_time.month
+    week = date_time.week
+    hour = date_time.hour
+    minute = date_time.minute
     
     input_data = pd.DataFrame({
-        "origin": [origin],
-        "destination": [destination],
-        "departure_datetime": [departure_datetime],
-        "cabin_type": [cabin_map[cabin_type]]
+        "startingAirport": [origin],
+        "destinationAirport": [destination],
+        "year": [year],
+        "month": [month],
+        "week": [week],
+        "hour": [hour],
+        "minute": [minute],
+        "CabinCode": [cabin_type.lower()]
     })
     
     return input_data
@@ -100,17 +105,11 @@ elif page == "Airfare Prediction":
             input_data = preprocess_input(origin_code, destination_code, departure_date, departure_time, cabin_type)
             
             # Get predictions from all models
-            fare_model1 = models[0].predict(input_data)[0]
-            fare_model2 = models[1].predict(input_data)[0]
+            result = models.predict(input_data)
             
             # Display the results
-            st.write(f"Predicted Fare by Model 1: ${fare_model1:.2f}")
-            st.write(f"Predicted Fare by Model 2: ${fare_model2:.2f}")
+            st.success(f"Predicted Fare: ${result[0][0]:.2f}")
             
-            # Optionally, you could display an average or other statistical results
-            avg_fare = (fare_model1 + fare_model2) / 2
-            st.write(f"Average Predicted Fare: ${avg_fare:.2f}")
-
 elif page == "About":
     st.title("About FlyFare")
     st.write("""
