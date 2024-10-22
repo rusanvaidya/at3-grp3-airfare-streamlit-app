@@ -144,7 +144,7 @@ elif page == "About":
     - ORD: O'Hare International Airport (Chicago, IL)
     - BOS: Logan International Airport (Boston, MA)
     - IAD: Washington Dulles International Airport (Washington, D.C.)
-    - DFW: Dallas/Fort Worth International Airport (Dallas, TX)
+    - DTW: Detroit Metropolitan Wayne County Airport (Detroit, MI) 
     """)
     
     st.write("""
