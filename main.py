@@ -1,7 +1,16 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import pickle
+import h5
 from datetime import datetime
+import tensorflow as tf
+
+# Import preprocessing functions with unique names
+from src.dz_processing import preprocess_input as preprocess_dz
+from src.hoa_processing import preprocess_input as preprocess_hoa
+from src.rusan_processing import preprocess_input as preprocess_rusan
+from src.zeyuan_processing import preprocess_input as preprocess_zeyuan
 
 # List of available airports
 airport_codes = {
@@ -24,44 +33,37 @@ airport_codes = {
 }
 
 # Function to load model based on origin airport
-def load_model_based_on_origin(origin_code):
+def load_model_and_preprocessor(origin_code):
     if origin_code in ["JFK", "EWR", "LGA", "PHL"]:
         # Load models handled by Dezhou
-        model_path = "models/model_student1.joblib"
+        model_path = "models/Dezhou_finalXGB.joblib"
+        model = joblib.load(model_path)
+        preprocess_function = preprocess_dz
+
     elif origin_code in ["ATL", "MIA", "CLT", "DFW"]:
         # Load models handled by Zeyuan
-        model_path = "models/model_student2.joblib"
+        model_path = "models/model_ZeyuanWang_14372534.h5"
+        model = tf.keras.models.load_model(model_path)
+        preprocess_function = preprocess_zeyuan
+
     elif origin_code in ["LAX", "SFO", "OAK", "DEN"]:
         # Load models handled by Hao
-        model_path = "models/model_hoadeng.joblib"
+        model_path = "models/model_West_Coast_Hubs.pkl"
+        model = joblib.load(model_path)
+        preprocess_function = preprocess_hoa
+
     elif origin_code in ["ORD", "BOS", "IAD", "DTW"]:
         # Load models handled by Rusan
         model_path = "models/model_rusanvaidya_24886400.joblib"
-    model = joblib.load(model_path)
-    return model, model_path
+        model = joblib.load(model_path)
+        preprocess_function = preprocess_rusan
 
-# Function to convert inputs into model-friendly format
-def preprocess_input(origin, destination, departure_date, departure_time, cabin_type):
-    departure_datetime = datetime.combine(departure_date, departure_time)
-    date_time = pd.to_datetime(departure_datetime)
-    year = date_time.year
-    month = date_time.month
-    week = date_time.week
-    hour = date_time.hour
-    minute = date_time.minute
-    
-    input_data = pd.DataFrame({
-        "startingAirport": [origin],
-        "destinationAirport": [destination],
-        "year": [year],
-        "month": [month],
-        "week": [week],
-        "hour": [hour],
-        "minute": [minute],
-        "CabinCode": [cabin_type.lower()]
-    })
-    
-    return input_data
+    else:
+        model = None
+        preprocess_function = None
+        model_path = None
+
+    return model, model_path, preprocess_function
 
 # Navigation system (navbar using radio button)
 st.sidebar.title("FlyFare")
@@ -95,20 +97,22 @@ elif page == "Airfare Prediction":
         origin_code = airport_codes[origin_airport]
         destination_code = airport_codes[destination_airport]
         
-        # Load the appropriate model based on the selected origin airport
-        models, model_path = load_model_based_on_origin(origin_code)
-        if models is None:
+        # Load the appropriate model and preprocessor based on the selected origin airport
+        model, model_path, preprocess_function = load_model_and_preprocessor(origin_code)
+        
+        if model is None or preprocess_function is None:
             st.error("No models available for the selected origin.")
         else:
             # Preprocess the input data
             st.success(f"Model loaded from {model_path}")
-            input_data = preprocess_input(origin_code, destination_code, departure_date, departure_time, cabin_type)
+
+            input_data = preprocess_function(origin_code, destination_code, departure_date, departure_time, cabin_type)
             
-            # Get predictions from all models
-            result = models.predict(input_data)
+            # Get predictions from the model
+            result = model.predict(input_data)
             
             # Display the results
-            st.success(f"Predicted Fare: ${result[0][0]:.2f}")
+            st.success(f"Predicted Fare: ${result[0]:.2f}")
             
 elif page == "About":
     st.title("About FlyFare")
@@ -128,13 +132,13 @@ elif page == "About":
     - LGA: LaGuardia Airport (New York City, NY)
     - PHL: Philadelphia International Airport (Philadelphia, PA)
     
-    **Zeyaun Wang**: Managed airports in the Southern United States:
+    **Zeyuan Wang**: Managed airports in the Southern United States:
     - ATL: Hartsfield-Jackson Atlanta International Airport (Atlanta, GA)
     - MIA: Miami International Airport (Miami, FL)
     - CLT: Charlotte Douglas International Airport (Charlotte, NC)
     - DFW: Dallas/Fort Worth International Airport (Dallas, TX)
     
-    **Hoa Deng**: Managed airports in the Western United States:
+    **Hao Deng**: Managed airports in the Western United States:
     - LAX: Los Angeles International Airport (Los Angeles, CA)
     - SFO: San Francisco International Airport (San Francisco, CA)
     - OAK: Oakland International Airport (Oakland, CA)
@@ -161,3 +165,4 @@ elif page == "Repository":
         - Github Experiment Repo: https://github.com/rusanvaidya/at3-travel-airfare-group3
         - Github Streamlit Repo: https://github.com/rusanvaidya/at3-grp3-airfare-streamlit-app
     """)
+

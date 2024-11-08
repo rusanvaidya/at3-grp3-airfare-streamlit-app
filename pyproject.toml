@@ -6,7 +6,9 @@ authors = ["at3-amlaa-group3"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "3.11"
+python = "3.11.4"
+h5 = "^0.9.3"
+xgboost = "^2.1.2"
 
 [tool.poetry.group.dev.dependencies]
 streamlit = "^1.39.0"
