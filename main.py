@@ -128,13 +128,13 @@ elif page == "About":
     - LGA: LaGuardia Airport (New York City, NY)
     - PHL: Philadelphia International Airport (Philadelphia, PA)
     
-    **Zeyaun Wang**: Managed airports in the Southern United States:
+    **Zeyuan Wang**: Managed airports in the Southern United States:
     - ATL: Hartsfield-Jackson Atlanta International Airport (Atlanta, GA)
     - MIA: Miami International Airport (Miami, FL)
     - CLT: Charlotte Douglas International Airport (Charlotte, NC)
     - DFW: Dallas/Fort Worth International Airport (Dallas, TX)
     
-    **Hoa Deng**: Managed airports in the Western United States:
+    **Hao Deng**: Managed airports in the Western United States:
     - LAX: Los Angeles International Airport (Los Angeles, CA)
     - SFO: San Francisco International Airport (San Francisco, CA)
     - OAK: Oakland International Airport (Oakland, CA)
