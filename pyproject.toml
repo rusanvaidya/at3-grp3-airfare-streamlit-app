@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "at3-streamlit-app"
+version = "0.0.1"
+description = ""
+authors = ["at3-amlaa-group3"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.11"
+
+[tool.poetry.group.dev.dependencies]
+streamlit = "^1.39.0"
+pandas = ">=1.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
