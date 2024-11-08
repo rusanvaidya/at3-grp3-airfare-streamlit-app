@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import joblib
 from datetime import datetime
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+import numpy as np
 
 # List of available airports
 airport_codes = {
@@ -33,7 +35,7 @@ def load_model_based_on_origin(origin_code):
         model_path = "models/model_student2.joblib"
     elif origin_code in ["LAX", "SFO", "OAK", "DEN"]:
         # Load models handled by Hao
-        model_path = "models/model_hoadeng.joblib"
+        model_path = "models/model_West_Coast_Hubs.pkl"
     elif origin_code in ["ORD", "BOS", "IAD", "DTW"]:
         # Load models handled by Rusan
         model_path = "models/model_rusanvaidya_24886400.joblib"
@@ -46,7 +48,7 @@ def preprocess_input(origin, destination, departure_date, departure_time, cabin_
     date_time = pd.to_datetime(departure_datetime)
     year = date_time.year
     month = date_time.month
-    week = date_time.week
+    week = date_time.isocalendar()[1]
     hour = date_time.hour
     minute = date_time.minute
     
@@ -60,7 +62,25 @@ def preprocess_input(origin, destination, departure_date, departure_time, cabin_
         "minute": [minute],
         "CabinCode": [cabin_type.lower()]
     })
-    
+
+    # Handle one-hot encoding for cabin type and label encoding for airports
+    label_encoder = LabelEncoder()
+    input_data['startingAirport'] = label_encoder.fit_transform([origin])
+    input_data['destinationAirport'] = label_encoder.fit_transform([destination])
+
+    # One-hot encoding of CabinCode
+    input_data = pd.get_dummies(input_data, columns=['CabinCode'], drop_first=True)
+
+    # Add missing columns for the model (in case the model was trained with them)
+    missing_columns = ['startingAirport', 'destinationAirport', 'year', 'month', 'week', 'hour', 'minute', 'CabinCode_premium']
+    for col in missing_columns:
+        if col not in input_data.columns:
+            input_data[col] = 0
+
+    # Standardize numerical features (same transformation as in the model)
+    scaler = StandardScaler()
+    input_data[['hour', 'minute']] = scaler.fit_transform(input_data[['hour', 'minute']])
+
     return input_data
 
 # Navigation system (navbar using radio button)
