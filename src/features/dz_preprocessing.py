@@ -6,10 +6,10 @@ import pytz
 # Mapping and timezone definitions
 cabin_priority = {
     'basic': 0,
-    'coach': 1,
-    'premium coach': 2,
-    'first': 3,
-    'business': 4
+    'Coach': 1,
+    'Premium': 2,
+    'First Class': 3,
+    'Business': 4
 }
 
 airport_combinations_encoded = {
